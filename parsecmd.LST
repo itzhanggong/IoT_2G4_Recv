@@ -1,0 +1,128 @@
+C51 COMPILER V7.10   PARSECMD                                                              12/18/2015 19:29:22 PAGE 1   
+
+
+C51 COMPILER V7.10, COMPILATION OF MODULE PARSECMD
+OBJECT MODULE PLACED IN .\parsecmd.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\parsecmd.c BROWSE DEBUG OBJECTEXTEND OBJECT(.\parsecmd.obj)
+
+line level    source
+
+   1          #include <GPM8F2202.h>
+   2          #include "parsecmd.h"
+   3          #include "xstring.h"
+   4          
+   5          /*-----------------------------------
+   6           *pwm = 0;关
+   7           *pwm = 1-100;从最亮到最暗。
+   8           *------------------------------------*/
+   9          void _parse_cmd(){
+  10   1       
+  11   1              uint8 cs1, i, cs2 = 0;
+  12   1              uint8 cmd2g4 = 0;
+  13   1              uint8 addr[3] = {0};
+  14   1      
+  15   1              cs1=_hexToByte(&Spi_rxBuff[14],2);
+  16   1      
+  17   1              for(i=0;i<14;i++){
+  18   2                      cs2+=Spi_rxBuff[i];
+  19   2              }
+  20   1      
+  21   1              if(cs1!=cs2){
+  22   2                      return ;
+  23   2              }
+  24   1      
+  25   1              cmd2g4 = _hexToByte(&Spi_rxBuff[8], 2);
+  26   1              addr[0] = _hexToByte(&Spi_rxBuff[2], 2);
+  27   1              addr[1] = _hexToByte(&Spi_rxBuff[4], 2);
+  28   1              addr[2] = _hexToByte(&Spi_rxBuff[6], 2);
+  29   1      
+  30   1              if(cmd2g4 == 0x00){                                                             //对码                                          
+  31   2                      /*if(Timer_T2)
+  32   2                              {
+  33   2                                                                                                              //地址写flash
+  34   2                              }*/
+  35   2              }else if(cmd2g4 == 0x01){
+  36   2                      CC2 = 0xAABB + 55;
+  37   2                      CC3     = 0xFFFF - 55;                                                  //开
+  38   2              }else if(cmd2g4 == 0x02){
+  39   2                      CC2 = CC3 = 0xFFFF - 55;                                                //关
+  40   2              }else if(cmd2g4 == 0x03){
+  41   2                                                                                                              //长按开
+  42   2              }else if(cmd2g4 == 0x04){
+  43   2                                                                                                              //长按关
+  44   2              }else if(cmd2g4 == 0x05){
+  45   2                      if((0xAABB+55) <= CC2 <= (0xFFFF-55)){                                          //亮度+
+  46   3                              CC2 -= 55;
+  47   3                      }
+  48   2              }else if(cmd2g4 == 0x06){
+  49   2                      if((0xAABB+55) <= CC2 <= (0xFFFF-55)){                                          //亮度-
+  50   3                              CC2 += 55;
+  51   3                      }
+  52   2              }else if(cmd2g4 == 0x07){
+  53   2                      if((0xAABB+55) <= CC3 <= (0xFFFF-55)){                                          //色温+
+  54   3                              CC3 -= 55;
+  55   3                      }
+C51 COMPILER V7.10   PARSECMD                                                              12/18/2015 19:29:22 PAGE 2   
+
+  56   2              }else if(cmd2g4 == 0x08){
+  57   2                 if((0xAABB+55) <= CC3 <= (0xFFFF-55)){                                               //色温-
+  58   3                              CC3 += 55;                                                      
+  59   3                      }
+  60   2              }else if(cmd2g4 == 0x09){                                                               
+  61   2                      CC2 = 0xAABB + 55;                                                                                      //正白
+  62   2                      CC3     = 0xFFFF - 55;
+  63   2              }else if(cmd2g4 == 0x0A){
+  64   2                      CC2 = 0xC727;                                                                                           //暖白
+  65   2                      CC3 = 0xC727;                                           
+  66   2              }else if(cmd2g4 == 0x0B){
+  67   2                      CC2 = 0xD55D;                                                                                           //中性
+  68   2                      CC3 = 0xD55D;
+  69   2              }else if(cmd2g4 == 0x0C){
+  70   2                      CC2 = 0xE393;                                                                                           //小夜灯 
+  71   2                      CC3 = 0xE393;
+  72   2              }                                                       
+  73   1      
+  74   1              
+  75   1              return;
+  76   1      
+  77   1      }
+  78          
+  79          uint8 _hexToByte(char *cp, uint8 len)
+  80          {
+  81   1              uint8 i,n,temp=0;
+  82   1      
+  83   1              if(xstrlen(cp)<len)
+  84   1              {
+  85   2                      return 0;
+  86   2              }
+  87   1      
+  88   1              for(i=0;i<len;i++)
+  89   1              {
+  90   2                      if(cp[i]>='A'&&cp[i]<='F')
+  91   2                              n=cp[i]-'A'+10;
+  92   2                      else if(cp[i]>='a'&&cp[i]<='f')
+  93   2                              n=cp[i]-'a'+10;
+  94   2                      else
+  95   2                              n=cp[i]-'0';
+  96   2      
+  97   2                      temp=temp*16+n;
+  98   2              }
+  99   1      
+ 100   1              return temp;
+ 101   1      }
+ 102          
+ 103          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    508    ----
+   CONSTANT SIZE    =      3    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      11
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

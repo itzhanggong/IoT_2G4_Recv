@@ -1,0 +1,54 @@
+C51 COMPILER V7.10   XSTRING                                                               12/18/2015 15:15:12 PAGE 1   
+
+
+C51 COMPILER V7.10, COMPILATION OF MODULE XSTRING
+OBJECT MODULE PLACED IN .\xstring.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\xstring.c BROWSE DEBUG OBJECTEXTEND OBJECT(.\xstring.obj)
+
+line level    source
+
+   1          #include "xstring.h"
+   2          #include "ver.h"
+   3          
+   4          uint8 xstrlen(uint8 *s)
+   5          {
+   6   1              const char *sc;
+   7   1              for(sc=s;*sc!='\0';++sc);
+   8   1              return sc-s;
+   9   1      }
+  10          
+  11          void *xmemcpy(void *dest, const void *src, uint8 count)
+  12          {
+  13   1              char *tmp = dest;
+  14   1              const char *s = src;
+  15   1              while(count--)
+  16   1                      *tmp++ = *s++;
+  17   1              return dest;
+  18   1      }
+  19          
+  20          int xmemcmp(const void *cs, const void *ct, uint8 count)
+  21          {
+  22   1              const unsigned char *su1, *su2;
+  23   1              int res = 0;
+  24   1              
+  25   1              for (su1 = cs, su2 = ct; 0 < count; ++su1, ++su2, count--)
+  26   1              {
+  27   2                      if((res = *su1 - *su2) != 0)
+  28   2                              break;
+  29   2              }
+  30   1              return res;
+  31   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    198    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      32
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

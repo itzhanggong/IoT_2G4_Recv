@@ -1,0 +1,123 @@
+C51 COMPILER V7.10   MAIN_GPM8F2202                                                        12/18/2015 19:28:23 PAGE 1   
+
+
+C51 COMPILER V7.10, COMPILATION OF MODULE MAIN_GPM8F2202
+OBJECT MODULE PLACED IN .\Main_GPM8F2202.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\Main_GPM8F2202.C BROWSE DEBUG OBJECTEXTEND OBJECT(.\Main_GPM8F2202.obj)
+
+line level    source
+
+   1          #include <GPM8F2202.h>
+   2          #include "xstring.h"
+   3          #include "ver.h"
+   4          #include "spi.h"
+   5          #include "parsecmd.h"
+   6          
+   7          void Init()
+   8          {
+   9   1              
+  10   1              P3_PU = P3 =0xFF;                                       //Set P3 as input pull high stauts
+  11   1          P3_PD = 0x18;                                               //set P3^4,P3^3 output;
+  12   1              
+  13   1              P0_PU = P0_PD = 0x3B;                           //Set P0^5, P0^4, P0^3, P0^1, P0^0 output;                      
+  14   1      
+  15   1              SPICS   = 1;
+  16   1              SPICLK  = 0;
+  17   1              RFRST   = 0;
+  18   1              PKT             = 1;
+  19   1              
+  20   1              PWM1    = 1;
+  21   1              PWM2    = 1;
+  22   1              
+  23   1              IOSCCON = 0x00;                                 //set Clock Source = 16Mhz;     
+  24   1      
+  25   1              CCEN    = (T2_PWM2 | T2_PWM3);  
+  26   1              T2CON   = (T2_On|T2_Reload_Enable|T2_CLK1);
+  27   1              CRC             = 0xAABB;
+  28   1              CC2             = 0xEABB;
+  29   1              CC3             = 0xFABB;
+  30   1              
+  31   1              TMOD    = T0_Mode2;
+  32   1              TL0             = 0x7A;
+  33   1              TH0             = 0x7A;
+  34   1              ET0             = 1;
+  35   1              EA              = 1;
+  36   1              TR0             = 1;                                    //Start Timer0 Counter*/
+  37   1      
+  38   1      }
+  39          
+  40          
+  41          uint16 RF_init()
+  42          {
+  43   1              RFRST= 0;       
+  44   1              Wait_mSec(10);
+  45   1              RFRST= 1;                                                       //Enable PL1167
+  46   1              Wait_mSec(500);                                         //delay 500ms to let PL1167 stable      ~~~~~~~~~
+  47   1              
+  48   1              Reg_write16(0x00,0x6f,0xe0);
+  49   1              Reg_write16(0x01,0x56,0x81);
+  50   1              Reg_write16(0x02,0x66,0x17);
+  51   1              Reg_write16(0x04,0x9c,0xc9);
+  52   1              Reg_write16(0x05,0x66,0x37);
+  53   1              Reg_write16(0x07,0x00,0x30);
+  54   1              Reg_write16(0x08,0x6c,0x90);
+  55   1              Reg_write16(0x09,0x48,0x00); 
+C51 COMPILER V7.10   MAIN_GPM8F2202                                                        12/18/2015 19:28:23 PAGE 2   
+
+  56   1              Reg_write16(0x0a,0x7f,0xfd);
+  57   1              Reg_write16(0x0b,0x00,0x08);
+  58   1              Reg_write16(0x0c,0x00,0x00);
+  59   1              Reg_write16(0x0d,0x48,0xbd);
+  60   1              Reg_write16(0x16,0x00,0xff);
+  61   1              Reg_write16(0x17,0x80,0x05);
+  62   1              Reg_write16(0x18,0x00,0x67);
+  63   1              Reg_write16(0x19,0x16,0x59);
+  64   1              Reg_write16(0x1a,0x1b,0xe0); 
+  65   1              Reg_write16(0x1b,0x13,0x00);
+  66   1              Reg_write16(0x1c,0x18,0x00);
+  67   1              Reg_write16(0x20,0x40,0x00); 
+  68   1              Reg_write16(0x21,0x3f,0xc7);
+  69   1              Reg_write16(0x22,0x20,0x00);
+  70   1              Reg_write16(0x23,0x05,0x80);
+  71   1                                                                      //Begin Syncword                                
+  72   1              Reg_write16(0x24,0x42,0x31);
+  73   1              Reg_write16(0x25,0x86,0x75);
+  74   1              Reg_write16(0x26,0x9a,0x0b);
+  75   1              Reg_write16(0x27,0xde,0xcf);
+  76   1                                                                      //End syncword
+  77   1              Reg_write16(0x28,0x44,0x01);
+  78   1              Reg_write16(0x29,0xb8,0x00); 
+  79   1              Reg_write16(0x2a,0xfd,0xb0);
+  80   1              Reg_write16(0x2b,0x00,0x0f);
+  81   1              Wait_mSec(10);                          //delay 10ms to let PL1167 for operation                                        
+  82   1              return GetReg7FromChip();
+  83   1      }
+  84          
+  85          
+  86          void main()
+  87          {
+  88   1              Init(); 
+  89   1              while(RF_init() != 0x0030);
+  90   1              
+  91   1              while(1)
+  92   1              {
+  93   2                      spi_Recv();
+  94   2                      if(spi_rx_complete){
+  95   3                              _parse_cmd();
+  96   3                      }
+  97   2              }
+  98   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    401    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

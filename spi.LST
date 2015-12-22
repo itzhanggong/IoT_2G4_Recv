@@ -1,0 +1,187 @@
+C51 COMPILER V7.10   SPI                                                                   12/18/2015 19:28:34 PAGE 1   
+
+
+C51 COMPILER V7.10, COMPILATION OF MODULE SPI
+OBJECT MODULE PLACED IN .\spi.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\spi.c BROWSE DEBUG OBJECTEXTEND OBJECT(.\spi.obj)
+
+line level    source
+
+   1          #include <GPM8F2202.h>
+   2          #include "spi.h"
+   3          #include "ver.h"
+   4          #include "xstring.h"
+   5          
+   6          void spi_Recv(){
+   7   1      
+   8   1              uint8 i;
+   9   1              uint8 Temp[CMD_BUFF_LEN] = {0};
+  10   1      
+  11   1              
+  12   1              Reg_write16(0x34, 0, 0x80);                     //reset 2.4G FIFO point
+  13   1              //Reg_write16(0x07, 0x00, 0xB0);                //enable RX mode
+  14   1              Reg_write16(0x07, (gReg7_high & 0xfe), (gReg7_low | 0x80));     //enter RX mode
+  15   1              //while(!PKT);
+  16   1              while(PKT == 0);  
+  17   1              SPICS = 0;
+  18   1              spi_write(0x32 | REG_RD);
+  19   1              spi_read();
+  20   1              for(i=0; i<=CMD_BUFF_LEN; i++){
+  21   2                      Temp[i] = spi_read();
+  22   2              }
+  23   1              
+  24   1              SPICS = 1;
+  25   1      
+  26   1              Reg_write16(0x07, (gReg7_high & 0xfe), (gReg7_low & 0x7f));
+  27   1              //Reg_write16(0x07, 0x00, 0x30);                //disable RX mode
+  28   1      
+  29   1              xmemcpy(Spi_rxBuff, Temp, CMD_BUFF_LEN);
+  30   1              spi_rx_complete = 1;
+  31   1      }
+  32          
+  33          void Reg_write16(uint8 addr, uint8 v1, uint8 v2){
+  34   1      
+  35   1      
+  36   1              SPICS = 0;
+  37   1              
+  38   1              spi_write(addr);
+  39   1              spi_write(v1);
+  40   1              spi_write(v2);
+  41   1      
+  42   1              pdelay(3);
+  43   1              SPICS = 1;
+  44   1              
+  45   1              if(addr < 0x20){
+  46   2      //              Wait_mSec(35);                  // RF register DBUS propergation time
+  47   2                      Wait_mSec(10);
+  48   2              }
+  49   1              return;
+  50   1      }
+  51          
+  52          uint16 Reg_read16(uint8 addr)
+  53          {
+  54   1              uint16 value =0;
+  55   1              SPICS = 0;
+C51 COMPILER V7.10   SPI                                                                   12/18/2015 19:28:34 PAGE 2   
+
+  56   1              
+  57   1              spi_write(addr | REG_RD);
+  58   1              
+  59   1              value = spi_read();
+  60   1              value <<= 8;
+  61   1              pdelay(3);
+  62   1              value |= spi_read();
+  63   1      
+  64   1              pdelay(3);
+  65   1              SPICS = 1;
+  66   1      
+  67   1              return value;
+  68   1      }
+  69          
+  70          void spi_write(uint8 spi_bValue){
+  71   1              
+  72   1              uint8 i;
+  73   1              
+  74   1              SPICS = 0; 
+  75   1              pdelay(10);
+  76   1              
+  77   1              for(i=0; i<8; i++){ 
+  78   2                      
+  79   2                      SPICLK = 1;   
+  80   2                      pdelay(10);
+  81   2                      if((spi_bValue&0x80)==0x80){
+  82   3                              SPIMOSI = 1;
+  83   3                      }else{  
+  84   3                              SPIMOSI = 0; 
+  85   3                      }
+  86   2                      pdelay(10);
+  87   2                      SPICLK = 0;
+  88   2                      pdelay(10);
+  89   2                      spi_bValue = (spi_bValue<<1);  
+  90   2              }  
+  91   1      }  
+  92          
+  93          uint8 spi_read()  
+  94          {  
+  95   1              uint8 i, spi_bValue;  
+  96   1              
+  97   1              SPICS = 0; 
+  98   1              SPICS = 0;
+  99   1              
+ 100   1              for(i=0; i<8; i++)  
+ 101   1              {                                  
+ 102   2                      SPICLK = 1;  
+ 103   2                      pdelay(10);
+ 104   2                      
+ 105   2                      spi_bValue <<= 1;  
+ 106   2                      SPICLK = 0; 
+ 107   2                      pdelay(10);
+ 108   2                              
+ 109   2                      if(SPIMISO == 1){
+ 110   3      
+ 111   3                              spi_bValue ++;  
+ 112   3                      }  
+ 113   2                      
+ 114   2              }  
+ 115   1      
+ 116   1              SPICLK = 0;
+ 117   1      
+C51 COMPILER V7.10   SPI                                                                   12/18/2015 19:28:34 PAGE 3   
+
+ 118   1              return spi_bValue;  
+ 119   1      } 
+ 120          
+ 121          
+ 122          
+ 123          //获取寄存器 7 的值
+ 124          uint16 GetReg7FromChip(void)
+ 125          {
+ 126   1              uint16 temp;
+ 127   1      
+ 128   1              temp = Reg_read16(0x07);
+ 129   1              gReg7_high = (uint8)((temp&0xff00)>>8);
+ 130   1              gReg7_low = (uint8)(temp&0x00ff);
+ 131   1      
+ 132   1              return temp;
+ 133   1      }
+ 134          /*
+ 135          void spi_Send(uint8 *ptr, uint8 bytes) //only tx loop
+ 136          {
+ 137                  uint8 i;
+ 138                  
+ 139                  Reg_write16(0x34,0x80,0x00);                                                                                            //清空邋FIFO    
+ 140                  pdelay(3);
+ 141                  spi_write(0x32);                                                                                                                        //Fill data to FIFO;
+ 142                  spi_write(CMD_BUFF_LEN);
+ 143                  for(i=0; i<(bytes); i++)                                                                                                        //发送数据
+ 144                  {       
+ 145                          spi_write(*ptr++);
+ 146                  }
+ 147                  
+ 148                  SPICS = 1;
+ 149                  pdelay(3);
+ 150                  
+ 151                  //Reg_write16(0x07,0x01,0x30);                  //使能TX
+ 152                  Reg_write16(0x07, (gReg7_high|0x01), gReg7_low&0x7f);                                   //使能TX
+ 153                  
+ 154                  //while(P3&0x80 == 0);
+ 155                  pdelay(3);
+ 156                  //Reg_write16(0x07,0x00,0x30);                                                                                          //disable TX    
+ 157                  Reg_write16(0x07, (gReg7_high&0xfe), gReg7_low&0x7f);                                   //TX Disable
+ 158          }
+ 159          */
+ 160          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    336    ----
+   CONSTANT SIZE    =     16    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      26
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

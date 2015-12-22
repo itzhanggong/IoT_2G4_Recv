@@ -1,0 +1,54 @@
+C51 COMPILER V7.10   VER                                                                   12/18/2015 19:28:45 PAGE 1   
+
+
+C51 COMPILER V7.10, COMPILATION OF MODULE VER
+OBJECT MODULE PLACED IN .\ver.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\ver.c BROWSE DEBUG OBJECTEXTEND OBJECT(.\ver.obj)
+
+line level    source
+
+   1          #include <GPM8F2202.h>
+   2          #include "ver.h"
+   3          
+   4          
+   5          //uart--------------------------------------------
+   6          /*uint8 rx_buff[RX_BUF_LENTH] = {0};
+   7          uint8 pre_cmd_buff[CMD_BUFF_LEN] = {0};
+   8          uint8 cmd_buff[CMD_BUFF_LEN] = {0};
+   9          uint8 rx_index = 0;
+  10          uint8 rx_timout = 0;
+  11          bit rx_complete = 0;
+  12          bit cmd_flag = 0;
+  13          uint8 rx_SBUFF = 0;*/
+  14          //------------------------------------------------
+  15          
+  16          //timer-------------------------------------------
+  17          uint16 mt7681_wdt = 0;
+  18          uint16 Timer_Delay1 = 0;
+  19          uint8 timer0_xbase = 0;
+  20          //------------------------------------------------
+  21          
+  22          //spi---------------------------------------------- 
+  23          uint8 spi_rx_complete = 0;
+  24          uint8 Spi_rxBuff[CMD_BUFF_LEN] = {0};
+  25          
+  26          //-------------------------------------------------
+  27          //2.4G--------------------------------------------------
+  28          volatile uint8  gReg7_high, gReg7_low;  // 寄存器7读写暂存变量
+  29          uint8 Auto_Ack_Select=0;                // 自动应答开关
+  30          //----------------------------------------------------
+  31          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     25    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
